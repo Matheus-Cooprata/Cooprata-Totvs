@@ -1,0 +1,14 @@
+#!/bin/bash
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$BRANCH" =~ ^main$ ]]; then
+  echo "❌ Erro: Commit direto proibido em $BRANCH. Use branches de feature."
+  exit 1
+fi
+
+# Bloqueio de credenciais
+if git diff --cached --name-only | grep -E "\.(env|key|pem|log)$"; then
+  echo "❌ Erro: Arquivos sensíveis detectados."
+  exit 1
+fi
+

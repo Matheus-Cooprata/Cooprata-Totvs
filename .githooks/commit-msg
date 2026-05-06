@@ -1,0 +1,61 @@
+#!/bin/bash
+
+COMMIT_MSG_FILE="$1"
+MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Valida padrão Conventional Commits
+PATTERN="^(feat|fix|chore|refactor|docs|test|perf|ci|style|build|revert|wip|init|release|meta|security|upgrade|downgrade|lint|i18n|text|deploy|critical|docker|config|package|merge|cleanup|breaking|review|a11y|move)(\(.+\))?: .{3,}"
+if [[ ! "$MSG" =~ $PATTERN ]]; then
+  echo "❌ Erro: Mensagem fora do padrão Conventional Commits."
+  echo "Ex: feat(ui): adiciona botão de login"
+  exit 1
+fi
+
+# Não adiciona emoji se já houver um no início
+if echo "$MSG" | grep -qP "^[\x{1F000}-\x{1FFFF}\x{2600}-\x{27FF}]" 2>/dev/null ||
+   echo "$MSG" | grep -qE "^:[a-z_]+:"; then
+  exit 0
+fi
+
+# Extrai o tipo e mapeia para emoji
+TYPE=$(echo "$MSG" | sed -E "s/^([a-zA-Z_\-]+)(\([^)]*\))?:.*/\1/" | tr "[:upper:]" "[:lower:]")
+case "$TYPE" in
+  feat|feature)              EMOJI="✨" ;;
+  fix|bugfix|hotfix)         EMOJI="🐛" ;;
+  docs|doc)                  EMOJI="📚" ;;
+  style|cosmetic)            EMOJI="💄" ;;
+  refactor|refact)           EMOJI="🔨" ;;
+  perf|performance)          EMOJI="🐎" ;;
+  test|tests)                EMOJI="🚨" ;;
+  build)                     EMOJI="👷" ;;
+  ci)                        EMOJI="💚" ;;
+  chore)                     EMOJI="⚡" ;;
+  revert)                    EMOJI="⏪" ;;
+  wip)                       EMOJI="🚧" ;;
+  init|initial)              EMOJI="🎉" ;;
+  release|tag|version)       EMOJI="🔖" ;;
+  meta|metadata)             EMOJI="📇" ;;
+  security|sec)              EMOJI="🔒" ;;
+  upgrade|up|bump)           EMOJI="⬆️" ;;
+  downgrade|down)            EMOJI="⬇️" ;;
+  lint)                      EMOJI="👕" ;;
+  i18n|translation|l10n)     EMOJI="👽" ;;
+  text|copy)                 EMOJI="📝" ;;
+  deploy)                    EMOJI="🚀" ;;
+  critical|ambulance)        EMOJI="🚑" ;;
+  docker)                    EMOJI="🐳" ;;
+  config|conf)               EMOJI="🔧" ;;
+  package|pkg)               EMOJI="📦" ;;
+  merge)                     EMOJI="🔀" ;;
+  cleanup|clean)             EMOJI="🔥" ;;
+  breaking|break)            EMOJI="💥" ;;
+  review|pr)                 EMOJI="👌" ;;
+  a11y|accessibility)        EMOJI="♿" ;;
+  move|rename)               EMOJI="🚚" ;;
+  *)                         EMOJI="" ;;
+esac
+
+if [ -n "$EMOJI" ]; then
+  printf "%s" "$EMOJI $MSG" > "$COMMIT_MSG_FILE"
+fi
+
